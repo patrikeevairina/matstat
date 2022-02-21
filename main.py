@@ -8,7 +8,7 @@ from numpy import random
 import pandas as pd
 from collections import Counter
 
-random.seed(7)
+random.seed(25090)
 n, p = 11, 0.68
 
 
@@ -99,15 +99,42 @@ def median(n, p, x_i, w_i):
             print(round(x_i[i], 6), " экспериментальная медиана")
             return
 
-def asymm_coef(n, p, x_i, w_i):
-    q = 1.0 - p;
+def asymm_exc_coef(n, p, x_i, w_i):
+    q = 1.0 - p
     a = (q - p)/(n*p*q)**0.5
     print(round(a, 6), " теоретический коэффициент асимметрии")
+    m_p = 0
 
-def excess_coef(n, p, x_i, w_i):
-    q = 1.0 - p
-    e = (1 - 6*p*q)/(n*p*q)
+    for i in range(len(x_i)):
+        m_p += x_i[i]*w_i[i]
+    mu1 = round(m_p, 6)
+    mu2 = 0
+    mu3 = 0
+    mu4 = 0
+    for i in range(len(x_i)):
+        mu2 += ((x_i[i]) ** 2) * w_i[i]
+        mu3 += ((x_i[i]) ** 3) * w_i[i]
+        mu4 += ((x_i[i]) ** 4) * w_i[i]
+    mu3_0 = mu3 - 3 * mu2 * mu1 + 2 * mu1 ** 3
+    mu4_0 = mu4 - 4 * mu3 * mu1 + 6 * mu2 * mu1 ** 2 - 3 * mu1 ** 4
+
+    m_p = 0.0
+    for i in range(len(x_i)):
+        m_p += x_i[i] * w_i[i]
+    m_p = m_p ** 2
+    m_2 = 0.0
+    for i in range(len(x_i)):
+        m_2 += x_i[i] ** 2 * w_i[i]
+    d = m_2 - m_p
+    sigma = round(d**0.5, 6)
+    vka = mu3_0 / (sigma ** 3)
+    vke = mu4_0 / (sigma ** 4) - 3
+    print(round(vka, 6), " экспериментальный коэффициент ассиметрии")
+    e = (1 - 6 * p * q) / (n * p * q)
     print(round(e, 6), " теоретический коэффициент эксцесса")
+    print(round(vke, 6), " экспериментальный коэффициент эксцесса")
+
+
 
 
 selection = binom.rvs(n, p, size=200)
@@ -126,5 +153,4 @@ disp(n, p, x_i, w_i)
 mean_sq_dev(n, p, x_i, w_i)
 mode(n, p, x_i, w_i)
 median(n, p, x_i, w_i)
-asymm_coef(n, p, x_i, w_i)
-excess_coef(n, p, x_i, w_i)
+asymm_exc_coef(n, p, x_i, w_i)
