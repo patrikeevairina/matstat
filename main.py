@@ -6,77 +6,118 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import random
 import pandas as pd
+from collections import Counter
 
-random.seed(10)
+random.seed(7)
+n, p = 11, 0.68
 
-num, p = 11, 0.68
-r = binom.rvs(num, p, size=200)
-k = 0
-rows, col = 20, 10
-without_order = np.zeros((rows, col))
-for i in range(rows):
-    for j in range(col):
-        without_order[i][j] = r[k]
-        k += 1
-# print(without_order)
-r.sort()
-with_order = np.zeros((rows, col), dtype=np.int8)
-k = 0
-for i in range(rows):
-    for j in range(col):
-        with_order[i][j] = r[k]
-        k += 1
-print(with_order)
 
-n = 1
-for i in range(199):
-    if r[i + 1] != r[i]:
-        n += 1
-print(n)
-pol = np.zeros(2 * n)
-plt.figure()
-k = 1.0
-l = 0
-for i in range(199):
-    if r[i + 1] == r[i]:
-        k += 1.0
-    else:
-        x = r[i]
-        y = k / 200.0
-        pol[l] = x
-        pol[l + n] = y
-        l += 1
-        k = 1.0
-if r[199] != r[198]:
-    pol[n - 1] = r[199]
-    pol[2 * n - 1] = 1.0 / 200
-else:
-    pol[n - 1] = r[199]
-    pol[2 * n - 1] = k / 200
+def print_polygons(x_i, w_i):
+    plt.figure()
+    plt.title("Полигон относительных частот")
+    plt.grid()
+    plt.plot(x_i, w_i, 'b')
 
-pol_teor = np.zeros(2 * n)
-for i in range(n):
-    pol_teor[i] = pol[i]
-for i in range(n, 2 * n):
-    pol_teor[i] = (math.comb(num, int(pol[i - n])) * (p ** (pol[i - n])) * ((1 - p) ** (num - pol[i - n])))
-plt.plot([pol[j] for j in range(n)], [pol[i] for i in range(n, 2 * n)], 'b')
-plt.plot([pol_teor[j] for j in range(n)], [pol_teor[i] for i in range(n, 2 * n)], "r")
-plt.title("Полигон относительных частот")
-plt.show()
+    teor_w_i = np.zeros(len(x_i))
+    for i in range(len(x_i)):
+        teor_w_i[i] = (math.comb(n, x_i[i]) * (p ** x_i[i]) * ((1 - p) ** (n - x_i[i])))
+    plt.plot(x_i, teor_w_i, 'r')
+    plt.show()
 
-plt.figure()
-prev = 0.0
-for j in range(n - 1):
-    plt.plot([pol[j], pol[j + 1]], [pol[j + n] + prev, pol[j + n] + prev], 'b')
-    prev += pol[j + n]
-plt.title("Эмпирическая функция распределения")
-plt.show()
+def empirical_distr(x_i, w_i):
+    plt.figure()
+    prev = 0.0
+    for i in range(len(x_i) - 1):
+        plt.plot([x_i[i], x_i[i+1]], [w_i[i] + prev, w_i[i] + prev], 'b')
+        prev += w_i[i]
+    plt.title("Эмпирическая функция распределения")
+    plt.show()
 
-print(statistics.mean(r), " выборочное среднее")
-print(statistics.variance(r), " выборочная дисперсия")
-print(statistics.stdev(r), " выборочное ско")
-print(statistics.mode(r), " выборочная мода")
-print(statistics.median(r), "выборочная медиана")
-s = pd.Series(r)
-print(s.skew(), " выборочная ассиметрия")
-print(s.kurt(), " выборочный эксцесс")
+def math_exp(n, p, x_i, w_i):
+    print(round(n*p, 6), " экспериментальное мат ожидание")
+    M = 0.0
+    for i in range(len(x_i)):
+        M += x_i[i]*w_i[i]
+    print(round(M, 6), " теоретическое мат ожидание")
+
+def disp(n, p, x_i, w_i):
+    q = 1.0 - p
+    print(round(n*p*q, 6), " экспериментальная дисперсия")
+    M = 0.0
+    for i in range(len(x_i)):
+        M += x_i[i] * w_i[i]
+    M = M**2
+    M_2 = 0.0
+    for i in range(len(x_i)):
+        M_2 += x_i[i]**2 * w_i[i]
+    D = M_2 - M
+    print(round(D, 6), " эталонная дисперсия")
+
+def mean_sq_dev(n, p, x_i, w_i):
+    q = 1.0 - p
+    print(round((n*p*q)**0.5, 6), " экспериментальное среднеквадратичное отклонение")
+    M = 0.0
+    for i in range(len(x_i)):
+        M += x_i[i] * w_i[i]
+    M = M ** 2
+    M_2 = 0.0
+    for i in range(len(x_i)):
+        M_2 += x_i[i] ** 2 * w_i[i]
+    D = M_2 - M
+    print(round(D**0.5, 6), " эталонное среднеквадратичное отклонение")
+
+def is_int(x):
+    return int(x) == float(x)
+
+def mode(n, p, x_i, w_i):
+    m = p*(n+1)
+    if not is_int(m):
+        m -= 0.5
+    print(round(m, 6), " экспериментальная мода")
+    flag = 0.0
+    key = 0
+    value = max(w_i)
+    for i in range(len(x_i)):
+        if w_i[i] == value:
+            if flag > 0 and w_i[i] != w_i[i-1]:
+                print(" эталонной моды нет")
+                return
+            key += x_i[i]
+            flag += 1.0
+    m = float(key) / flag
+    print(round(m, 6), " эталонная мода")
+
+def median(n, p, x_i, w_i):
+    print(round(n*p, 6), " экспериментальная медиана")
+    prev = 0.0
+    for i in range(len(x_i) - 1):
+        prev += w_i[i]
+        if prev == 0.5:
+            print(round((x_i[i]+x_i[i+1])*0.5, 6), " эталонная медиана")
+            return
+        if prev > 0.5:
+            print(round(x_i[i], 6), " эталонная медиана")
+            return
+
+def assym_coef(n, p, x_i, w_i):
+    pass;
+
+def excess_coef(n, p, x_i, w_i):
+    pass;
+
+selection = binom.rvs(n, p, size=200)
+print(selection)
+selection.sort()
+print(selection)
+count = Counter(selection)
+w_i = list(count.values())
+for i in range(len(count)):
+    w_i[i] = w_i[i] / 200.0
+x_i = list(count.keys())
+print_polygons(x_i, w_i)
+empirical_distr(x_i, w_i)
+math_exp(n, p, x_i, w_i)
+disp(n, p, x_i, w_i)
+mean_sq_dev(n, p, x_i, w_i)
+mode(n, p, x_i, w_i)
+median(n, p, x_i, w_i)
