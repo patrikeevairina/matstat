@@ -7,34 +7,41 @@ import numpy as np
 from numpy import random
 import pandas as pd
 from collections import Counter
+import matplotlib.ticker as ticker
 
 random.seed(25090)
 n, p = 11, 0.68
 
 
 def print_polygons(x_i, w_i):
-    plt.figure()
-    plt.title("Полигон относительных частот")
-    plt.grid()
-    plt.plot(x_i, w_i, 'b')
+    fig, ox = plt.subplots()
+    ox.plot(x_i, w_i, 'b')
+    ox.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
+    ox.xaxis.set_major_locator(ticker.MultipleLocator(1))
 
     teor_w_i = np.zeros(len(x_i))
     for i in range(len(x_i)):
         teor_w_i[i] = (math.comb(n, x_i[i]) * (p ** x_i[i]) * ((1 - p) ** (n - x_i[i])))
-    plt.plot(x_i, teor_w_i, 'r')
+        print(teor_w_i[i] - w_i[i])
+    ox.plot(x_i, teor_w_i, 'r')
+    plt.title("Полигон относительных частот")
+    plt.grid()
+
     plt.show()
 
 def empirical_distr(x_i, w_i):
-    plt.figure()
-    plt.grid()
+    fig, ax = plt.subplots()
     prev = 0.0
     arr = [0 for i in range(len(x_i)-1)]
     for i in range(len(x_i) - 1):
-        plt.plot([x_i[i], x_i[i+1]], [w_i[i] + prev, w_i[i] + prev], 'b')
+        ax.plot([x_i[i], x_i[i+1]], [w_i[i] + prev, w_i[i] + prev], 'b')
         prev += w_i[i]
         arr[i] = round(prev, 6)
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
     print("s_i ", arr)
     plt.title("Эмпирическая функция распределения")
+    plt.grid()
     plt.show()
 
 def math_exp(n, p, x_i, w_i):
