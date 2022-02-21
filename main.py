@@ -102,7 +102,7 @@ def median(n, p, x_i, w_i):
 def asymm_coef(n, p, x_i, w_i):
     q = 1.0 - p;
     a = (q - p)/(n*p*q)**0.5
-    print(round(a, 6), " теоретический коэффициент ассимметрии")
+    print(round(a, 6), " теоретический коэффициент асимметрии")
 
 def excess_coef(n, p, x_i, w_i):
     q = 1.0 - p
