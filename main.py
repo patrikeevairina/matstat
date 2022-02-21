@@ -73,7 +73,7 @@ def mode(n, p, x_i, w_i):
     m = p*(n+1)
     if not is_int(m):
         m -= 0.5
-    print(round(m, 6), " теоретическое мода")
+    print(round(m, 6), " теоретическая мода")
     flag = 0.0
     key = 0
     value = max(w_i)
