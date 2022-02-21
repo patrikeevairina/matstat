@@ -34,15 +34,15 @@ def empirical_distr(x_i, w_i):
     plt.show()
 
 def math_exp(n, p, x_i, w_i):
-    print(round(n*p, 6), " экспериментальное мат ожидание")
+    print(round(n*p, 6), " теоретическое мат ожидание")
     M = 0.0
     for i in range(len(x_i)):
         M += x_i[i]*w_i[i]
-    print(round(M, 6), " теоретическое мат ожидание")
+    print(round(M, 6), " экспериментальное мат ожидание")
 
 def disp(n, p, x_i, w_i):
     q = 1.0 - p
-    print(round(n*p*q, 6), " экспериментальная дисперсия")
+    print(round(n*p*q, 6), " теоретическая дисперсия")
     M = 0.0
     for i in range(len(x_i)):
         M += x_i[i] * w_i[i]
@@ -51,11 +51,11 @@ def disp(n, p, x_i, w_i):
     for i in range(len(x_i)):
         M_2 += x_i[i]**2 * w_i[i]
     D = M_2 - M
-    print(round(D, 6), " эталонная дисперсия")
+    print(round(D, 6), " экспериментальная дисперсия")
 
 def mean_sq_dev(n, p, x_i, w_i):
     q = 1.0 - p
-    print(round((n*p*q)**0.5, 6), " экспериментальное среднеквадратичное отклонение")
+    print(round((n*p*q)**0.5, 6), " теоретическое среднеквадратичное отклонение")
     M = 0.0
     for i in range(len(x_i)):
         M += x_i[i] * w_i[i]
@@ -64,7 +64,7 @@ def mean_sq_dev(n, p, x_i, w_i):
     for i in range(len(x_i)):
         M_2 += x_i[i] ** 2 * w_i[i]
     D = M_2 - M
-    print(round(D**0.5, 6), " эталонное среднеквадратичное отклонение")
+    print(round(D**0.5, 6), " экспериментальное среднеквадратичное отклонение")
 
 def is_int(x):
     return int(x) == float(x)
@@ -73,30 +73,30 @@ def mode(n, p, x_i, w_i):
     m = p*(n+1)
     if not is_int(m):
         m -= 0.5
-    print(round(m, 6), " экспериментальная мода")
+    print(round(m, 6), " теоретическое мода")
     flag = 0.0
     key = 0
     value = max(w_i)
     for i in range(len(x_i)):
         if w_i[i] == value:
             if flag > 0 and w_i[i] != w_i[i-1]:
-                print(" эталонной моды нет")
+                print(" экспериментальной моды нет")
                 return
             key += x_i[i]
             flag += 1.0
     m = float(key) / flag
-    print(round(m, 6), " эталонная мода")
+    print(round(m, 6), " экспериментальная мода")
 
 def median(n, p, x_i, w_i):
-    print(round(n*p, 6), " экспериментальная медиана")
+    print(round(n*p, 6), " теоретическая медиана")
     prev = 0.0
     for i in range(len(x_i) - 1):
         prev += w_i[i]
         if prev == 0.5:
-            print(round((x_i[i]+x_i[i+1])*0.5, 6), " эталонная медиана")
+            print(round((x_i[i]+x_i[i+1])*0.5, 6), " экспериментальная медиана")
             return
         if prev > 0.5:
-            print(round(x_i[i], 6), " эталонная медиана")
+            print(round(x_i[i], 6), " экспериментальная медиана")
             return
 
 def assym_coef(n, p, x_i, w_i):
