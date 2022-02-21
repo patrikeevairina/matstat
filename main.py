@@ -99,11 +99,16 @@ def median(n, p, x_i, w_i):
             print(round(x_i[i], 6), " экспериментальная медиана")
             return
 
-def assym_coef(n, p, x_i, w_i):
-    pass;
+def asymm_coef(n, p, x_i, w_i):
+    q = 1.0 - p;
+    a = (q - p)/(n*p*q)**0.5
+    print(round(a, 6), " теоретический коэффициент ассимметрии")
 
 def excess_coef(n, p, x_i, w_i):
-    pass;
+    q = 1.0 - p
+    e = (1 - 6*p*q)/(n*p*q)
+    print(round(e, 6), " теоретический коэффициент эксцесса")
+
 
 selection = binom.rvs(n, p, size=200)
 print(selection)
@@ -121,3 +126,5 @@ disp(n, p, x_i, w_i)
 mean_sq_dev(n, p, x_i, w_i)
 mode(n, p, x_i, w_i)
 median(n, p, x_i, w_i)
+asymm_coef(n, p, x_i, w_i)
+excess_coef(n, p, x_i, w_i)
