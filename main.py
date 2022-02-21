@@ -26,19 +26,23 @@ def print_polygons(x_i, w_i):
 
 def empirical_distr(x_i, w_i):
     plt.figure()
+    plt.grid()
     prev = 0.0
+    arr = [0 for i in range(len(x_i)-1)]
     for i in range(len(x_i) - 1):
         plt.plot([x_i[i], x_i[i+1]], [w_i[i] + prev, w_i[i] + prev], 'b')
         prev += w_i[i]
+        arr[i] = round(prev, 6)
+    print("s_i ", arr)
     plt.title("Эмпирическая функция распределения")
     plt.show()
 
 def math_exp(n, p, x_i, w_i):
-    print(round(n*p, 6), " теоретическое мат ожидание")
+    print(round(n*p, 6), " теоретическое среднее")
     M = 0.0
     for i in range(len(x_i)):
         M += x_i[i]*w_i[i]
-    print(round(M, 6), " экспериментальное мат ожидание")
+    print(round(M, 6), " экспериментальное среднее")
 
 def disp(n, p, x_i, w_i):
     q = 1.0 - p
@@ -134,18 +138,18 @@ def asymm_exc_coef(n, p, x_i, w_i):
     print(round(e, 6), " теоретический коэффициент эксцесса")
     print(round(vke, 6), " экспериментальный коэффициент эксцесса")
 
-
-
-
 selection = binom.rvs(n, p, size=200)
 print(selection)
 selection.sort()
 print(selection)
 count = Counter(selection)
 w_i = list(count.values())
+print("n_i ", w_i)
 for i in range(len(count)):
     w_i[i] = w_i[i] / 200.0
+print("w_i ", w_i)
 x_i = list(count.keys())
+print("x_i ", x_i)
 print_polygons(x_i, w_i)
 empirical_distr(x_i, w_i)
 math_exp(n, p, x_i, w_i)
