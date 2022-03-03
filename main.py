@@ -1,121 +1,118 @@
+from math import factorial
+from math import exp
+from math import sqrt
+from scipy.stats import laplace
 import math
-import statistics
-
-from scipy.stats import binom
-import matplotlib.pyplot as plt
 import numpy as np
 from numpy import random
-import pandas as pd
-from collections import Counter
-import matplotlib.ticker as ticker
+import matplotlib.pyplot as plt
+from matplotlib import ticker
+from scipy.stats import norm
+import scipy
 
-random.seed(25090)
-n, p = 11, 0.68
+v = 86  # номер варианта
+par_a = pow(-1, v)*0.1*v
+sko = sqrt(0.005*v+1)
+print("номер варианта, значения параметров распределения: ", v, par_a, sko)
+random.seed(5)
 
 
-def print_polygons(x_i, w_i):
-    fig, ox = plt.subplots()
-    ox.plot(x_i, w_i, 'b')
-    ox.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
-    ox.xaxis.set_major_locator(ticker.MultipleLocator(1))
+def empirical_distr(x, selection):
+    #считаем сначала w
+    local_n = np.unique(selection, return_counts=True)
+    arr_size = local_n[1].size
+    local_w = [i for i in range(arr_size)]
 
-    teor_w_i = np.zeros(len(x_i))
-    for i in range(len(x_i)):
-        teor_w_i[i] = (math.comb(n, x_i[i]) * (p ** x_i[i]) * ((1 - p) ** (n - x_i[i])))
-        print(teor_w_i[i] - w_i[i])
-    ox.plot(x_i, teor_w_i, 'r')
-    plt.title("Полигон относительных частот")
-    plt.grid()
+    for j in range(arr_size):
+        local_w[j] = round(local_n[1][j] / 200, 5)
 
-    plt.show()
-
-def empirical_distr(x_i, w_i):
+    #а теперь уже строим
     fig, ax = plt.subplots()
     prev = 0.0
-    arr = [0 for i in range(len(x_i)-1)]
-    for i in range(len(x_i) - 1):
-        ax.plot([x_i[i], x_i[i+1]], [w_i[i] + prev, w_i[i] + prev], 'b')
-        prev += w_i[i]
+    arr = [0 for i in range(len(x)-1)]
+    for i in range(len(x) - 1):
+        ax.plot([x[i], x[i+1]], [local_w[i] + prev, local_w[i] + prev], 'b')
+        prev += local_w[i]
         arr[i] = round(prev, 6)
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-    print("s_i ", arr)
     plt.title("Эмпирическая функция распределения")
     plt.grid()
     plt.show()
 
-def math_exp(n, p, x_i, w_i):
-    print(round(n*p, 6), " теоретическое среднее")
-    M = 0.0
-    for i in range(len(x_i)):
-        M += x_i[i]*w_i[i]
-    print(round(M, 6), " экспериментальное среднее")
+def hystogram(a, w, step):
+    fig, ax = plt.subplots()
+    for i in range(len(w)):
+        h = round(w[i]/step, 5)
+        ax.plot([a[i], a[i]], [0, h], 'b')
+        ax.plot([a[i], a[i+1]], [h, h], 'b')
+        ax.plot([a[i + 1], a[i+1]], [h, 0], 'b')
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    plt.title("Гистограмма относительных частот")
+    plt.grid()
+    plt.show()
 
-def disp(n, p, x_i, w_i):
-    q = 1.0 - p
-    print(round(n*p*q, 6), " теоретическая дисперсия")
+
+def math_exp(a, x, w):
     M = 0.0
-    for i in range(len(x_i)):
-        M += x_i[i] * w_i[i]
+    for i in range(len(x)):
+        M += x[i]*w[i]
+    print(round(M, 5), " экспериментальное выборочное среднее,", round(a, 5), " теоретическое выборочное среднее,", round(abs(a-M), 5), " абсолютное отклонение,", round(100*abs(a-M)/a, 5), "% относительное отклонение")
+
+
+def disp(sko, x, w, step):
+    M = 0.0
+    for i in range(len(x)):
+        M += x[i] * w[i]
     M = M**2
     M_2 = 0.0
-    for i in range(len(x_i)):
-        M_2 += x_i[i]**2 * w_i[i]
-    D = M_2 - M
-    print(round(D, 6), " экспериментальная дисперсия")
+    for i in range(len(x)):
+        M_2 += x[i]**2 * w[i]
+    D = M_2 - M - step**2/12
+    print(round(D, 5), "экспериментальная выборочная дисперсия с поправкой Шеппарда,", round(sko**2, 5), "теоретическая дисперсия,", round(abs(D-sko**2), 5), " абсолютное отклонение,", round(100*abs(D-sko**2)/sko**2, 5), "% относительное отклонение")
 
-def mean_sq_dev(n, p, x_i, w_i):
-    q = 1.0 - p
-    print(round((n*p*q)**0.5, 6), " теоретическое среднеквадратичное отклонение")
+
+def mean_sq_dev(sko, x, w):
     M = 0.0
-    for i in range(len(x_i)):
-        M += x_i[i] * w_i[i]
+    for i in range(len(x)):
+        M += x[i] * w[i]
     M = M ** 2
     M_2 = 0.0
-    for i in range(len(x_i)):
-        M_2 += x_i[i] ** 2 * w_i[i]
+    for i in range(len(x)):
+        M_2 += x[i] ** 2 * w[i]
     D = M_2 - M
-    print(round(D**0.5, 6), " экспериментальное среднеквадратичное отклонение")
+    print(round(D**0.5, 5), "экспериментальное среднеквадратичное отклонение,", round(sko, 5), "теоретическое среднеквадратичное отклонение,", round(abs(D**0.5-sko), 5), " абсолютное отклонение,", round(100*abs(D**0.5-sko)/sko, 5), "% относительное отклонение")
 
 def is_int(x):
     return int(x) == float(x)
 
-def mode(n, p, x_i, w_i):
-    m = p*(n+1)
-    if not is_int(m):
-        m -= 0.5
-    print(round(m, 6), " теоретическая мода")
-    flag = 0.0
-    key = 0
-    value = max(w_i)
-    for i in range(len(x_i)):
-        if w_i[i] == value:
-            if flag > 0 and w_i[i] != w_i[i-1]:
-                print(" экспериментальной моды нет")
-                return
-            key += x_i[i]
-            flag += 1.0
-    m = float(key) / flag
-    print(round(m, 6), " экспериментальная мода")
 
-def median(n, p, x_i, w_i):
-    print(round(n*p, 6), " теоретическая медиана")
-    prev = 0.0
-    for i in range(len(x_i) - 1):
-        prev += w_i[i]
-        if prev == 0.5:
-            print(round((x_i[i]+x_i[i+1])*0.5, 6), " экспериментальная медиана")
+def mode(par_a, a, w, step):
+    #получаем индекс, соотв-ий модальному интервалу
+    k = 0
+    for i in range(len(w)):
+        if w[i] == max(w):
+            k = i
+    m = a[k] + step * (w[k] - w[k-1]) / (2*w[k] - w[k-1] - w[k+1])
+    print(round(m, 5), "экспериментальная выборочная мода,", round(par_a, 5), " теоретическая мода,", round(abs(par_a-m), 5), " абсолютное отклонение,", round(100*abs(par_a-m)/par_a, 5), "% относительное отклонение")
+
+
+def median(par_a, a, w, step):
+    sum_w = 0
+    for i in range(len(w)):
+        sum_w += w[i]
+        if sum_w == 1/2:
+            print(round(a[i+1], 5), " экспериментальная медиана", round(par_a, 5), " теоретическая медиана", round(abs(par_a-a[i+1]), 5), " абсолютное отклонение,", round(100*abs(par_a-a[i+1])/par_a, 5), "% относительное отклонение")
             return
-        if prev > 0.5:
-            print(round(x_i[i], 6), " экспериментальная медиана")
+        if sum_w > 1/2:
+            answer = a[i]+step*(0.5-sum_w+w[i-1])/w[i]
+            print(round(answer, 5), " экспериментальная медиана", round(par_a, 5), " теоретическая медиана", round(abs(par_a-answer), 5), " абсолютное отклонение,", round(100*abs(par_a-answer)/par_a, 5), "% относительное отклонение")
             return
 
-def asymm_exc_coef(n, p, x_i, w_i):
-    q = 1.0 - p
-    a = (q - p)/(n*p*q)**0.5
-    print(round(a, 6), " теоретический коэффициент асимметрии")
+
+def asymm_exc_coef(x_i, w_i):
     m_p = 0
-
     for i in range(len(x_i)):
         m_p += x_i[i]*w_i[i]
     mu1 = round(m_p, 6)
@@ -140,28 +137,81 @@ def asymm_exc_coef(n, p, x_i, w_i):
     sigma = round(d**0.5, 6)
     vka = mu3_0 / (sigma ** 3)
     vke = mu4_0 / (sigma ** 4) - 3
-    print(round(vka, 6), " экспериментальный коэффициент ассиметрии")
-    e = (1 - 6 * p * q) / (n * p * q)
-    print(round(e, 6), " теоретический коэффициент эксцесса")
-    print(round(vke, 6), " экспериментальный коэффициент эксцесса")
+    print(round(vka, 5), "экспериментальный коэффициент ассиметрии,", 0, "теоретический коэффициент асимметрии,", round(vka, 5), "абсолютное отклонение")
+    print(round(vke, 5), "экспериментальный коэффициент эксцесса,", 0, "теоретический коэффициент эксцесса,", round(vke, 5), "абсолютное отклонение")
 
-selection = binom.rvs(n, p, size=200)
-print(selection)
+
+selection = norm.rvs(par_a, sko, size=200)
+for i in range(len(selection)):
+    selection[i] = round(selection[i], 5)
+print(par_a, sko)
+print("выборка", selection)
+
 selection.sort()
-print(selection)
-count = Counter(selection)
-w_i = list(count.values())
-print("n_i ", w_i)
-for i in range(len(count)):
-    w_i[i] = w_i[i] / 200.0
-print("w_i ", w_i)
-x_i = list(count.keys())
-print("x_i ", x_i)
-print_polygons(x_i, w_i)
-empirical_distr(x_i, w_i)
-math_exp(n, p, x_i, w_i)
-disp(n, p, x_i, w_i)
-mean_sq_dev(n, p, x_i, w_i)
-mode(n, p, x_i, w_i)
-median(n, p, x_i, w_i)
-asymm_exc_coef(n, p, x_i, w_i)
+print("упорядоченная выборка", selection)
+
+x = np.unique(selection)
+#print("x_i", x)
+
+m = 1 + round(math.log2(200))
+d = selection[len(selection)-1] - selection[0]
+step = d/m
+a = [i for i in range(m+1)]
+a[0] = x[0]
+for i in range(1, m+1):
+    a[i] = a[i-1]+step
+for i in range(m+1):
+    a[i] = round(a[i], 5)
+
+n = [0 for i in range(m)]
+n[0] = 1
+j = 1
+for i in range(m):
+    while j < len(x) and a[i] < x[j] <= a[i + 1]:
+        j += 1
+        n[i] += 1
+
+w = [0 for i in range(m)]
+for i in range(m):
+    w[i] = round(n[i]/200, 5)
+
+# интервальный ряд (группированная выборка)
+print("интервальный ряд (группированная выборка)")
+for i in range(1, m+1):
+    print("[", a[i-1], ",", a[i], "]", n[i-1], w[i-1])
+print("sum n_i", sum(n), "sum w_i", round(sum(w), 5))
+
+# ассоциированный ряд
+print("ассоциированный ряд")
+for i in range(1, m+1):
+    print("x*_i", round((a[i]+a[i-1])/2, 5))
+
+print("анализ результатов 1)таблица сравнения относительных частот и теоретических вероятностей")
+p = [0 for i in range(len(w))]
+for i in range(len(w)):
+    p[i] += math.erf((a[i + 1]-par_a)/sko) - math.erf((a[i]-par_a)/sko)
+for i in range(len(p)):
+    p[i] = round(p[i], 5)
+delta = 0
+for i in range(1, m+1):
+    print("[", a[i-1], ",", a[i], "]", w[i-1], p[i-1], round(abs(w[i-1]-p[i-1]), 5))
+    if round(abs(w[i-1]-p[i-1]), 5) > delta:
+        delta = round(abs(w[i-1]-p[i-1]), 5)
+print("sum w_i", sum(w), "sum p_i", round(sum(p), 5), "max delta", delta)
+
+print("анализ результатов 2) таблица сравнения рассчитанных характеристик с теоретическими значениями")
+local_n = np.unique(selection, return_counts=True)
+arr_size = local_n[1].size
+local_w = [i for i in range(arr_size)]
+for j in range(arr_size):
+    local_w[j] = round(local_n[1][j] / 200, 5)
+
+math_exp(par_a, x, local_w)
+disp(sko, x, local_w, step)
+mean_sq_dev(sko, x, local_w)
+mode(par_a, a, w, step)
+median(par_a, a, w, step)
+asymm_exc_coef(x, local_w)
+
+hystogram(a, w, step)
+empirical_distr(x, selection)
