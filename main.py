@@ -12,7 +12,7 @@ import scipy
 
 v = 86  # номер варианта
 par_a = pow(-1, v)*0.1*v
-sko = sqrt(0.005*v+1)
+sko = round(sqrt(0.005*v+1), 5)
 print("номер варианта, значения параметров распределения: ", v, par_a, sko)
 random.seed(5)
 
@@ -144,7 +144,6 @@ def asymm_exc_coef(x_i, w_i):
 selection = norm.rvs(par_a, sko, size=200)
 for i in range(len(selection)):
     selection[i] = round(selection[i], 5)
-print(par_a, sko)
 print("выборка", selection)
 
 selection.sort()
