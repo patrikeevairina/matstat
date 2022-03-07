@@ -183,7 +183,7 @@ print("sum n_i", sum(n), "sum w_i", round(sum(w), 5))
 # ассоциированный ряд
 print("ассоциированный ряд")
 for i in range(1, m+1):
-    print("x*_i", round((a[i]+a[i-1])/2, 5))
+    print("x*_i", round((a[i]+a[i-1])/2, 5), n[i-1], w[i-1])
 
 print("анализ результатов 1)таблица сравнения относительных частот и теоретических вероятностей")
 p = [0 for i in range(len(w))]
