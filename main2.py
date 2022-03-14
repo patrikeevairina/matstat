@@ -11,10 +11,9 @@ from scipy.stats import norm
 import scipy
 
 v = 86  # номер варианта
-par_a = pow(-1, v)*0.1*v
-sko = round(sqrt(0.005*v+1), 5)
-print("номер варианта, значения параметров распределения: ", v, par_a, sko)
-random.seed(356)
+lbd = 3 + pow(-1, v) * 0.01 * v
+print("номер варианта, значения параметров распределения: ", lbd)
+random.seed(5)
 
 
 def empirical_distr(x, selection):
@@ -141,22 +140,13 @@ def asymm_exc_coef(x_i, w_i):
     print(round(vke, 5), "экспериментальный коэффициент эксцесса,", 0, "теоретический коэффициент эксцесса,", round(vke, 5), "абсолютное отклонение")
 
 
-selection = norm.rvs(par_a, sko, size=200)
-print("           неупорядоченная выборка")
+selection = scipy.stats.expon(lbd, size=200)
 for i in range(len(selection)):
-    if i % 10 == 0:
-        print("Числа с", i+1, "по", i+10)
     selection[i] = round(selection[i], 5)
-    print(selection[i])
-
+print("выборка", selection)
 
 selection.sort()
-print("           упорядоченная выборка")
-for i in range(len(selection)):
-    if i % 10 == 0:
-        print("Числа с", i+1, "по", i+10)
-    selection[i] = round(selection[i], 5)
-    print(selection[i])
+print("упорядоченная выборка", selection)
 
 x = np.unique(selection)
 #print("x_i", x)
@@ -184,36 +174,29 @@ for i in range(m):
     w[i] = round(n[i]/200, 5)
 
 # интервальный ряд (группированная выборка)
-print()
 print("интервальный ряд (группированная выборка)")
-print("    интервалы             n_i       w_i")
 for i in range(1, m+1):
-    print("[", a[i-1], ",", a[i], "]     ", n[i-1], "     ", w[i-1])
+    print("[", a[i-1], ",", a[i], "]", n[i-1], w[i-1])
 print("sum n_i", sum(n), "sum w_i", round(sum(w), 5))
 
 # ассоциированный ряд
-print("     ")
 print("ассоциированный ряд")
-print("x*_i         n_i       w_i")
 for i in range(1, m+1):
-    print(round((a[i]+a[i-1])/2, 5), "     ", n[i-1], "     ", w[i-1])
+    print("x*_i", round((a[i]+a[i-1])/2, 5), n[i-1], w[i-1])
 
-print()
 print("анализ результатов 1)таблица сравнения относительных частот и теоретических вероятностей")
-print("   интервалы            w_i        p_i       |w_i - p_i|")
 p = [0 for i in range(len(w))]
 for i in range(len(w)):
-    p[i] += scipy.stats.norm.cdf((a[i + 1]-par_a)/sko) - scipy.stats.norm.cdf((a[i]-par_a)/sko)
+    p[i] += exp(-lbd * a[i]) - exp(-lbd * a[i+1])
 for i in range(len(p)):
     p[i] = round(p[i], 5)
 delta = 0
 for i in range(1, m+1):
-    print("[", a[i-1], ",", a[i], "]   ", w[i-1], "   ", p[i-1], "    ", round(abs(w[i-1]-p[i-1]), 5))
+    print("[", a[i-1], ",", a[i], "]", w[i-1], p[i-1], round(abs(w[i-1]-p[i-1]), 5))
     if round(abs(w[i-1]-p[i-1]), 5) > delta:
         delta = round(abs(w[i-1]-p[i-1]), 5)
 print("sum w_i", sum(w), "sum p_i", round(sum(p), 5), "max delta", delta)
 
-print()
 print("анализ результатов 2) таблица сравнения рассчитанных характеристик с теоретическими значениями")
 local_n = np.unique(selection, return_counts=True)
 arr_size = local_n[1].size
@@ -221,12 +204,7 @@ local_w = [i for i in range(arr_size)]
 for j in range(arr_size):
     local_w[j] = round(local_n[1][j] / 200, 5)
 
-math_exp(par_a, x, local_w)
-disp(sko, x, local_w, step)
-mean_sq_dev(sko, x, local_w)
-mode(par_a, a, w, step)
-median(par_a, a, w, step)
-asymm_exc_coef(x, local_w)
+
 
 hystogram(a, w, step)
 empirical_distr(x, selection)
