@@ -12,7 +12,7 @@ import scipy
 
 v = 86  # номер варианта
 par_a = pow(-1, v)*0.1*v
-sko = round(sqrt(0.005*v+1), 5)
+sko = round(0.005*v+1, 5)
 print("номер варианта, значения параметров распределения: ", v, par_a, sko)
 random.seed(356)
 
@@ -144,19 +144,29 @@ def asymm_exc_coef(x_i, w_i):
 selection = norm.rvs(par_a, sko, size=200)
 print("           неупорядоченная выборка")
 for i in range(len(selection)):
-    if i % 10 == 0:
-        print("Числа с", i+1, "по", i+10)
+ #   if i % 10 == 0:
+  #      print("Числа с", i+1, "по", i+10)
     selection[i] = round(selection[i], 5)
-    print(selection[i])
+   # print(selection[i], ",")
+#print(selection)
 
+for i in range(10):
+    for j in range(20):
+        print(selection[i+j*10])
+    print(i)
 
 selection.sort()
 print("           упорядоченная выборка")
 for i in range(len(selection)):
-    if i % 10 == 0:
-        print("Числа с", i+1, "по", i+10)
+ #   if i % 10 == 0:
+  #      print("Числа с", i+1, "по", i+10)
     selection[i] = round(selection[i], 5)
-    print(selection[i])
+  #  print(selection[i])
+
+for i in range(10):
+    for j in range(20):
+        print(selection[i + j * 10])
+    print(i)
 
 x = np.unique(selection)
 #print("x_i", x)
